@@ -22,7 +22,7 @@ parser.ReplaceWithTokens(input, placeholders, map[string]string{
     "SALARY": "50000",
 })
 
-parser.ReplaceWithTokens(input, placeholders, func(key string) string {
+result := parser.ReplaceWithTokens(input, placeholders, func(key string) string {
     switch key {
     case "ID":
         return "1"
@@ -34,5 +34,10 @@ parser.ReplaceWithTokens(input, placeholders, func(key string) string {
         return "50000"
     }
 })
+
+fmt.Println(result)
+
+// output:
+// id:1/name:John/age:25/salary:50000
 
 ```
