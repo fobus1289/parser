@@ -7,17 +7,14 @@ import (
 
 func TestFindTexts(t *testing.T) {
 
-	const EXP = "iDDDD:{ID}/name:{NAME}/age:${AGE}/salary:{SALARY}"
+	const EXP = "testing testing testing"
 
 	parser := NewParser(EXP)
 
 	tokens := parser.Parse()
 
 	for _, v := range tokens {
-		// if v.Type == IDENT {
-		// fmt.Println(v.SplitUpper())
-		fmt.Println(v.JoinUpper())
-		// }
+		fmt.Println(v.UpperFirst())
 	}
 }
 

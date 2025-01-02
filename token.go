@@ -218,11 +218,11 @@ func (t Token) SplitPunct() []Token {
 }
 
 func (t Token) Join(joiner func() []Token, transform func(string) string) string {
-	var tokens []string
+	var result []byte
 	for _, v := range joiner() {
-		tokens = append(tokens, transform(v.Value))
+		result = append(result, transform(v.Value)...)
 	}
-	return strings.Join(tokens, "")
+	return string(result)
 }
 
 func (t Token) JoinUpper() string {
@@ -240,5 +240,23 @@ func (t Token) JoinLower() string {
 func (t Token) JoinDigit() string {
 	return t.Join(t.SplitDigit, func(s string) string {
 		return s
+	})
+}
+
+func (t Token) JoinLetter() string {
+	return t.Join(t.SplitLetter, func(s string) string {
+		return s
+	})
+}
+
+func (t Token) UpperFirst() string {
+	return t.Join(t.SplitUpper, func(s string) string {
+		return strings.ToUpper(s[0:1]) + s[1:]
+	})
+}
+
+func (t Token) LowerFirst() string {
+	return t.Join(t.SplitLetter, func(s string) string {
+		return strings.ToLower(s[0:1]) + s[1:]
 	})
 }
