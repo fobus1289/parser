@@ -1,8 +1,25 @@
 package parser
 
 import (
+	"fmt"
 	"testing"
 )
+
+func TestFindTexts(t *testing.T) {
+
+	const EXP = "iDDDD:{ID}/name:{NAME}/age:${AGE}/salary:{SALARY}"
+
+	parser := NewParser(EXP)
+
+	tokens := parser.Parse()
+
+	for _, v := range tokens {
+		// if v.Type == IDENT {
+		// fmt.Println(v.SplitUpper())
+		fmt.Println(v.JoinUpper())
+		// }
+	}
+}
 
 func TestParsePlaceholders_ValidInput(t *testing.T) {
 	const EXP = "id:{ID}/name:{NAME}/age:${AGE}/salary:{SALARY}"
@@ -84,7 +101,7 @@ func TestReplaceWithTokens_ReplaceWithMap(t *testing.T) {
 	}
 
 	result := ReplaceWithTokens(EXP, placeholders, replacer)
-
+	t.Log(result)
 	if result != "id:1/name:John/age:25/salary:50000" {
 		t.Errorf("Expected result to be 'id:1/name:John/age:25/salary:50000', got %s", result)
 	}
