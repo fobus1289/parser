@@ -7,15 +7,9 @@ import (
 
 func TestFindTexts(t *testing.T) {
 
-	const EXP = "testing testing testing"
+	const EXP = "testing @@@testing _______testing"
 
-	parser := NewParser(EXP)
-
-	tokens := parser.Parse()
-
-	for _, v := range tokens {
-		fmt.Println(v.UpperFirst())
-	}
+	fmt.Println(SnakeCase(EXP))
 }
 
 func TestParsePlaceholders_ValidInput(t *testing.T) {
