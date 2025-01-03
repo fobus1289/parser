@@ -1,15 +1,29 @@
 package parser
 
+import "strings"
+
 func CamelCase(s string) string {
 	p := NewParser(s)
 
 	var result []byte
 
-	tokens := p.Parse()
+	tokens := Filter(p.Parse(), func(t Token) bool {
+		return t.Type == IDENT
+	})
 
-	for _, token := range tokens {
+	for i, token := range tokens {
 		if token.Type == IDENT {
-			result = append(result, token.UpperFirst()...)
+			res := token.Join(token.SplitUpper, func(s string) string {
+				if len(s) == 0 {
+					return s
+				}
+				if i == 0 {
+					return strings.ToLower(s[0:1]) + s[1:]
+				}
+				return strings.ToUpper(s[0:1]) + s[1:]
+			})
+
+			result = append(result, res...)
 		}
 	}
 
@@ -31,7 +45,9 @@ func CamelCase(s string) string {
 func SnakeCase(s string) string {
 	p := NewParser(s)
 
-	tokens := p.Parse()
+	tokens := Filter(p.Parse(), func(t Token) bool {
+		return t.Type == IDENT
+	})
 
 	var result []byte
 
@@ -40,9 +56,9 @@ func SnakeCase(s string) string {
 
 			res := token.Join(token.SplitUpper, func(s string) string {
 				if i == 0 {
-					return s
+					return strings.ToLower(s)
 				}
-				return "_" + s
+				return "_" + strings.ToLower(s)
 			})
 
 			result = append(result, res...)

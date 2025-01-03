@@ -7,9 +7,17 @@ import (
 
 func TestFindTexts(t *testing.T) {
 
-	const EXP = "testing @@@testing _______testing"
+	const EXP = " Testing_@@@testing _______testing"
 
 	fmt.Println(SnakeCase(EXP))
+	fmt.Println(CamelCase(EXP))
+}
+
+func BenchmarkSnakeCase(b *testing.B) {
+	const EXP = " Testing_@@@testing _______testing"
+	for i := 0; i < b.N; i++ {
+		_ = SnakeCase(EXP)
+	}
 }
 
 func TestParsePlaceholders_ValidInput(t *testing.T) {
