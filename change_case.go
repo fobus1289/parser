@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"reflect"
 	"strings"
 	"unicode"
 	"unsafe"
@@ -31,33 +30,32 @@ func CamelCaseOptimized(input string) string {
 	return string(res)
 }
 
+func StringToBytes(s string) []byte {
+	return unsafe.Slice(unsafe.StringData(s), len(s))
+}
+
+func BytesToString(b []byte) string {
+	return unsafe.String(&b[0], len(b))
+}
+
 func CamelCaseUnsafe(input string) string {
-	// Преобразуем строку в байтовый срез без копирования
+
 	inBytes := *(*[]byte)(unsafe.Pointer(&input))
-	// outBytes := make([]byte, 0, len(inBytes)) // Создаём выходной массив с избыточной длиной
 
-	outSliceHeader := &reflect.SliceHeader{
-		Data: uintptr(unsafe.Pointer(&inBytes[0])),
-		Len:  0,
-		Cap:  len(inBytes),
-	}
-
-	outBytes := *(*[]byte)(unsafe.Pointer(outSliceHeader))
+	outBytes := unsafe.Slice(unsafe.StringData(input), 0)[:]
 
 	capitalizeNext := true
 	for _, b := range inBytes {
-		if b == '_' || b == '-' || b == ' ' || unicode.IsPunct(rune(b)) { // Проверяем разделители
+		if b == '_' || b == '-' || b == ' ' || unicode.IsPunct(rune(b)) {
 			capitalizeNext = true
 			continue
 		}
 		if capitalizeNext {
-			// Преобразуем к верхнему регистру
 			if b >= 'a' && b <= 'z' {
 				b -= 'a' - 'A'
 			}
 			capitalizeNext = false
 		} else {
-			// Преобразуем к нижнему регистру
 			if b >= 'A' && b <= 'Z' {
 				b += 'a' - 'A'
 			}
@@ -65,8 +63,139 @@ func CamelCaseUnsafe(input string) string {
 		outBytes = append(outBytes, b)
 	}
 
-	// Преобразуем байты обратно в строку
 	return *(*string)(unsafe.Pointer(&outBytes))
+	return ""
+}
+
+func CamelCaseUnsafe2(input string) string {
+	// Получаем указатель на исходные байты строки
+	inBytes := unsafe.Slice(unsafe.StringData(input), len(input))
+
+	// Создаем новый срез для результата
+	outBytes := make([]byte, 0, len(input))
+
+	capitalizeNext := true
+	for _, b := range inBytes {
+		if b == '_' || b == '-' || b == ' ' || unicode.IsPunct(rune(b)) {
+			capitalizeNext = true
+			continue
+		}
+
+		if capitalizeNext {
+			// Преобразуем в заглавный символ, если это буква
+			if b >= 'a' && b <= 'z' {
+				b -= 'a' - 'A'
+			}
+			capitalizeNext = false
+		} else {
+			// Преобразуем в строчный символ, если это буква
+			if b >= 'A' && b <= 'Z' {
+				b += 'a' - 'A'
+			}
+		}
+
+		// Добавляем байт в результат
+		outBytes = append(outBytes, b)
+	}
+
+	// Преобразуем результат обратно в строку через unsafe
+	return *(*string)(unsafe.Pointer(&outBytes))
+}
+
+func CamelCaseUnsafe3(input string) string {
+	// Получаем указатель на исходные байты строки
+	inBytes := unsafe.Slice(unsafe.StringData(input), len(input))
+
+	// Выделяем память под результат с использованием unsafe
+	outBytes := make([]byte, len(input))
+	outPtr := unsafe.Pointer(&outBytes[0])
+
+	// Инициализируем счетчик для записи в новый срез
+	writeIndex := 0
+	capitalizeNext := true
+
+	for _, b := range inBytes {
+		if b == '_' || b == '-' || b == ' ' || unicode.IsPunct(rune(b)) {
+			capitalizeNext = true
+			continue
+		}
+
+		if capitalizeNext {
+			// Преобразуем в заглавный символ, если это буква
+			if b >= 'a' && b <= 'z' {
+				b -= 'a' - 'A'
+			}
+			capitalizeNext = false
+		} else {
+			// Преобразуем в строчный символ, если это буква
+			if b >= 'A' && b <= 'Z' {
+				b += 'a' - 'A'
+			}
+		}
+
+		// Записываем байт в выделенную память
+		*(*byte)(unsafe.Add(outPtr, writeIndex)) = b
+		writeIndex++
+	}
+
+	// Преобразуем результат обратно в строку
+	return *(*string)(unsafe.Pointer(&outBytes))
+}
+
+func CamelCaseUnsafeTokens(input string) []Token {
+	// Получаем указатель на исходные байты строки
+	// inBytes := unsafe.Slice(unsafe.SliceData(input), len(input))
+
+	// Создаем новый срез для результата
+	// outBytes := make([]byte, 0, len(input))
+
+	inRunes := []rune(input)
+
+	var result []Token
+
+	capitalizeNext := true
+	for _, b := range inRunes {
+
+		if b == '_' || b == '-' || b == ' ' || unicode.IsPunct(rune(b)) {
+			capitalizeNext = true
+			continue
+		}
+
+		// if capitalizeNext {
+		// 	// Преобразуем в заглавный символ, если это буква
+		// 	if b >= 'a' && b <= 'z' {
+		// 		b -= 'a' - 'A'
+		// 	}
+		// 	capitalizeNext = false
+		// } else {
+		// 	// Преобразуем в строчный символ, если это буква
+		// 	if b >= 'A' && b <= 'Z' {
+		// 		b += 'a' - 'A'
+		// 	}
+		// }
+
+		if capitalizeNext {
+			if b >= 'a' && b <= 'z' {
+				// b -= 'a' - 'A'
+			}
+			capitalizeNext = false
+
+		} else {
+			if b >= 'A' && b <= 'Z' {
+				// b += 'a' - 'A'
+			}
+		}
+
+		// result = append(result, Token{
+		// 	Type:  IDENT,
+		// 	Value: string(b),
+		// 	Start: 0,
+		// 	End:   0,
+		// })
+	}
+
+	// Преобразуем результат обратно в строку через unsafe
+	return result
 }
 
 func CamelCase(s string) string {

@@ -126,10 +126,7 @@ func (p *Parser) Parse() []Token {
 func (p *Parser) ParseText() Token {
 	p.lexer.EscapeSpace()
 
-	start := p.lexer.pos
-
 	isLast := false
-
 	for {
 		ch, ok := p.lexer.Peek()
 		{
@@ -139,12 +136,30 @@ func (p *Parser) ParseText() Token {
 				break
 			}
 
-			if unicode.IsSpace(ch) || unicode.IsUpper(ch) {
+			if !unicode.IsSymbol(ch) {
 				break
 			}
-		}
 
-		p.lexer.NextPos()
+			p.lexer.NextPos()
+		}
+	}
+
+	start := p.lexer.pos
+	for {
+		ch, ok := p.lexer.Peek()
+		{
+
+			if !ok {
+				isLast = true
+				break
+			}
+
+			if unicode.IsSymbol(ch) || unicode.IsSpace(ch) {
+				break
+			}
+
+			p.lexer.NextPos()
+		}
 	}
 
 	return Token{Type: TEXT, Value: string(p.lexer.input[start:p.lexer.pos]), Start: start, End: p.lexer.pos, IsLast: isLast}
